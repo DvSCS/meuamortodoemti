@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para o Amor da Minha Vida</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400&family=Libre+Baskerville:ital,wght@1,700&family=Montserrat:wght@300;400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --font-title: 'Libre Baskerville', serif;
+            --font-body: 'Lato', sans-serif;
+            --font-journey: 'Montserrat', sans-serif;
+            --color-dark: #1a1a1a;
+            --color-light: #fdfdfd;
+            --color-accent: #bfbda4;
+        }
+
+        body {
+            background-color: var(--color-light);
+            color: var(--color-dark);
+            font-family: var(--font-body);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        /* --- TELA INICIAL E MENSAGEM SINCRONIZADA --- */
+        #start-screen { text-align: center; }
+        #start-button {
+            font-family: var(--font-body);
+            font-size: 1.2em;
+            background-color: var(--color-dark);
+            color: var(--color-light);
+            padding: 15px 30px;
+            border-radius: 50px;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        #start-button:hover { transform: scale(1.05); background-color: #333; }
+
+        #main-content {
+            display: none; width: 100%; height: 100%;
+            flex-direction: column; justify-content: center; align-items: center;
+            opacity: 1; transition: opacity 1s ease-out;
+        }
+        #lyrics-container {
+            text-align: center; width: 90%; max-width: 800px; min-height: 60vh;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .line {
+            font-size: 3em; opacity: 0; transform: scale(0.98);
+            transition: opacity 1.5s cubic-bezier(0.19, 1, 0.22, 1), transform 1.5s cubic-bezier(0.19, 1, 0.22, 1);
+        }
+        .line.visible { opacity: 1; transform: scale(1); }
+        .intense-style { font-family: var(--font-title); font-weight: 700; font-style: italic; }
+        audio { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 80%; max-width: 500px; z-index: 10; opacity: 0.6; }
+
+        /* --- CENA DA LÂMPADA (TRANSIÇÃO) --- */
+        #light-scene {
+            display: none; position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #07071d;
+            z-index: 100;
+            opacity: 0;
+            transition: opacity 2s ease-in, transform 1.5s cubic-bezier(0.76, 0, 0.24, 1), background-color 0.3s ease;
+            flex-direction: row; justify-content: center; align-items: center;
+        }
+        #light-scene.active { display: flex; opacity: 1; }
+        #light-scene.journey-started { transform: translateX(-100%); }
+
+        .light-content-wrapper { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0; transition: opacity 1s ease 0.5s; z-index: 10; }
+        #light-scene.lights-on .light-content-wrapper { opacity: 1; }
+
+        #final-message { font-family: var(--font-title); font-size: 2.5em; font-weight: 700; font-style: italic; color: var(--color-accent); margin-bottom: 40px; transition: color 0.3s ease; }
+        #light-scene.lights-on #final-message { color: var(--color-dark); }
+        
+        #journey-start-button { font-family: var(--font-journey); font-size: 1.5em; font-weight: 700; color: #07071d; background-color: var(--color-accent); padding: 20px 50px; border: none; border-radius: 50px; cursor: pointer; text-transform: uppercase; letter-spacing: 2px; transition: transform 0.3s ease; }
+        #journey-start-button:hover { transform: scale(1.05); }
+
+        #bulb-container { width: 40%; height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+        #switch-container { width: 20%; height: 100vh; display: flex; flex-direction: column; justify-content: center; margin-top:-52px; }
+        #switch-cover { background: #3d3b3c; width: 80px; height: 120px; border-radius: 5px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: space-between; box-shadow: 0 0 5px black; margin: 0 auto; }
+        .screw { width: 5px; margin: 10px; height: 5px; background: #2f2f2f; border-radius: 50%; }
+        #switch { background: linear-gradient(#3d3b3c, #2f2f2f); position: relative; width: 40px; height: 60px; border-bottom: 1px solid black; border-top: 5px solid #1f1f1f; border-right: 1px solid black; border-left: 1px solid black; cursor: pointer; transition: all .1s ease-Out; }
+        #chord { width: 10px; background: #3d3b3c; height: 200px; display: block; margin: 0 auto; }
+        .lightbulb { transition: all 0.3s ease; background: #050513; }
+        #bulb-top { width: 46px; height: 30px; margin: 0 auto; margin-top: -8px; border-radius: 10px 10px 0 0; }
+        #bulb-bottom { width: 80px; height: 80px; margin: 0 auto; border-radius: 50%; margin-top: -15px; }
+        #light-scene.lights-on { background: #bfbda4; }
+        #light-scene.lights-on #switch-cover { box-shadow: 0 0 5px #717171; background: #deded2; }
+        #light-scene.lights-on #switch { background: linear-gradient(#cecec3, #deded2); border-bottom: 5px solid #737373; border-top: 1px solid #888; border-right: 1px solid #888; border-left: 1px solid #888; }
+        #light-scene.lights-on .screw { background: #bfbfb5; }
+        #light-scene.lights-on .lightbulb { background: #deded2; box-shadow: 0 8.5px 24px 3px #deded2; }
+        
+        /* --- A JORNADA DO FUTURO --- */
+        #journey-container { position: fixed; top: 0; left: 100%; width: 100%; height: 100%; background: var(--color-light); z-index: 101; transition: transform 1.5s cubic-bezier(0.76, 0, 0.24, 1); overflow: hidden; }
+        #journey-container.visible { transform: translateX(-100%); }
+        .journey-content { position: relative; width: 100%; height: 100%; }
+
+        .journey-step { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; box-sizing: border-box; text-align: center; opacity: 0; transform: scale(1.05); pointer-events: none; transition: opacity 1.2s cubic-bezier(0.4, 0, 0.2, 1), transform 1.2s cubic-bezier(0.4, 0, 0.2, 1); }
+        .journey-step.is-active { opacity: 1; transform: scale(1); pointer-events: auto; z-index: 2; }
+        
+        .step-content-wrapper { flex-grow: 1; overflow-y: auto; padding: 8vh 5vw 20px; display: flex; flex-direction: column; align-items: center; }
+        .step-title { font-family: var(--font-title); font-size: 3.5em; margin-bottom: 10px; width: 100%; }
+        .step-subtitle { font-family: var(--font-journey); font-size: 1.2em; font-weight: 300; max-width: 650px; margin-bottom: 30px; line-height: 1.6; }
+        .image-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; width: 100%; max-width: 900px; margin-bottom: 30px; align-items: center; }
+        .image-grid img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        
+        .image-grid.single-image { max-width: 80vw; }
+        .image-grid.single-image img { width: auto; height: auto; max-width: 100%; max-height: 50vh; object-fit: contain; }
+
+        .next-step-button-wrapper { padding: 20px 0; width: 100%; flex-shrink: 0; }
+        .next-step-button { font-family: var(--font-journey); font-size: 1em; font-weight: 700; background-color: var(--color-dark); color: var(--color-light); padding: 15px 40px; border-radius: 50px; border: none; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.3s ease; z-index: 5; }
+        .next-step-button:hover { transform: scale(1.05); }
+
+        .family-input-section { display: flex; flex-direction: column; align-items: center; gap: 20px; margin-bottom: 30px; width: 100%; max-width: 400px; }
+        .family-input-group { display: flex; width: 100%; gap: 10px; }
+        .family-input-section input { flex-grow: 1; padding: 15px; border: 1px solid #ccc; border-radius: 25px; font-family: var(--font-journey); font-size: 1em; }
+        .family-input-section button { font-family: var(--font-journey); font-weight: 700; background-color: var(--color-dark); color: var(--color-light); padding: 15px 20px; border-radius: 25px; border: none; cursor: pointer; transition: background-color 0.3s ease; }
+        .family-input-section button:hover { background-color: #333; }
+        #family-reveal-container { margin-top: 20px; opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; max-width: 90%; }
+        #family-reveal-container.visible { opacity: 1; transform: translateY(0); }
+        .family-image { max-width: 100%; width: 300px; height: auto; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); margin-bottom: 15px; }
+        .family-caption { font-family: var(--font-title); font-size: 2em; font-style: italic; }
+
+        .travel-carousel { width: 100%; max-width: 700px; height: 450px; position: relative; overflow: hidden; border-radius: 15px; box-shadow: 0 15px 30px rgba(0,0,0,0.2); margin-bottom: 30px; }
+        .carousel-track { display: flex; height: 100%; transition: transform 0.5s ease-in-out; }
+        .carousel-slide { flex-shrink: 0; width: 100%; height: 100%; }
+        .carousel-slide img { width: 100%; height: 100%; object-fit: cover; }
+        .carousel-button { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); border: none; color: white; font-size: 2rem; cursor: pointer; z-index: 2; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
+        .carousel-button.left { left: 10px; }
+        .carousel-button.right { right: 10px; }
+        
+        #step-7 .step-title { font-size: 4.5em; }
+        #step-7 .step-subtitle { font-size: 1.5em; font-style: italic; }
+
+        /* ALTERAÇÕES PARA MOBILE */
+        @media (max-width: 768px) {
+            .line { font-size: 2em; }
+            .step-title, #final-message { font-size: 2.2em; }
+            .step-subtitle { font-size: 1em; }
+            #step-7 .step-title { font-size: 2.8em; }
+            #step-7 .step-subtitle { font-size: 1.2em; }
+            .travel-carousel { height: 350px; }
+
+            /* CORREÇÃO CRÍTICA: LÂMPADA */
+            #light-scene {
+                flex-direction: column;
+                justify-content: flex-start; /* Alinha itens ao topo */
+                padding-top: 20vh; /* Dá espaço no topo */
+            }
+            .light-content-wrapper {
+                position: relative; /* Remove do posicionamento absoluto */
+                transform: none;
+                top: auto; left: auto;
+                order: -1; /* Garante que venha ANTES da lâmpada no layout flex */
+                width: 90%;
+            }
+            #bulb-container, #switch-container {
+                width: 100%; height: auto;
+                margin-top: 40px; /* Dá espaço entre o botão e a lâmpada */
+            }
+            #switch-container { margin-top: 20px; }
+
+            /* CORREÇÃO CRÍTICA: GRADES DE IMAGENS */
+            .image-grid {
+                grid-template-columns: 1fr; /* Força UMA coluna, empilhando as imagens */
+            }
+            .image-grid.single-image img { max-height: 45vh; }
+            .family-caption { font-size: 1.5em; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <p style="font-size: 1.2em; font-weight: 300;">Uma mensagem para você...</p>
+        <button id="start-button">Começar</button>
+        <input type="file" id="final-file-input" accept="audio/mp3" style="display: none;">
+    </div>
+
+    <div id="main-content">
+        <div id="lyrics-container"></div>
+        <audio id="audio-player" controls></audio>
+    </div>
+
+    <div id="light-scene">
+        <div class="light-content-wrapper">
+            <h2 id="final-message">Vamos visitar nosso futuro, meu bem.</h2>
+            <button id="journey-start-button">Vamos</button>
+        </div>
+        <div id="bulb-container">
+            <div id="chord"></div>
+            <div class="lightbulb" id="bulb-top"></div>
+            <div class="lightbulb" id="bulb-bottom"></div>
+        </div>
+        <div id="switch-container">
+            <div id="switch-cover">
+                <div class="screw"></div>
+                <div id="switch"></div>
+                <div class="screw"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="journey-container">
+        <div class="journey-content">
+            <!-- PASSO 1 -->
+            <section class="journey-step" id="step-1">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">1. O Começo</h2>
+                    <p class="step-subtitle">Isso não é só sobre mim ou sobre você. É sobre NÓS. É a nossa declaração de que, juntos, somos uma força imparável, construindo um império não para o mundo ver, mas para a gente viver.</p>
+                </div>
+                <div class="next-step-button-wrapper">
+                    <button class="next-step-button">Nossos Sonhos</button>
+                </div>
+            </section>
+            <!-- PASSO 2 -->
+            <section class="journey-step" id="step-2">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">2. Nosso Lar</h2>
+                    <p class="step-subtitle">Este não é um amontoado de tijolos. É o nosso santuário. O lugar onde o cheiro de café pela manhã se mistura com teu sorriso. Onde cada cômodo guardará o eco das nossas risadas e o silêncio confortável do nosso amor.</p>
+                    <div class="image-grid single-image">
+                        <img src="https://i.ibb.co/QvWvbwcc/Captura-de-tela-2025-07-31-234642.png" alt="Casa dos Sonhos">
+                    </div>
+                </div>
+                <div class="next-step-button-wrapper">
+                    <button class="next-step-button">Nossa Garagem</button>
+                </div>
+            </section>
+            <!-- PASSO 3 -->
+            <section class="journey-step" id="step-3">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">3. Nossa Garagem</h2>
+                    <p class="step-subtitle">Aqui não moram apenas veículos. Moram as nossas fugas planejadas, as viagens de última hora e a liberdade de saber que qualquer estrada é nossa, desde que o destino final seja um ao outro.</p>
+                    <div class="image-grid">
+                        <img src="https://motos2023.com.br/wp-content/uploads/2022/12/Mat_Axis_Grey_Metallic1.png" alt="Nossa Moto">
+                        <img src="https://evoyconsorcios.com.br/images/uploads/posts/rack-thule-para-hilux-sw4.png" alt="Nosso Carro de Viagem">
+                        <img src="http://ae01.alicdn.com/kf/S22ec0230458e4fe6827b52eb9c5e4f00A.jpg" alt="Nosso Carro do Dia a Dia">
+                    </div>
+                </div>
+                <div class="next-step-button-wrapper">
+                    <button class="next-step-button">Nossas Aventuras</button>
+                </div>
+            </section>
+            <!-- PASSO 4 -->
+            <section class="journey-step" id="step-4">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">4. Nossas Aventuras</h2>
+                    <p class="step-subtitle">Não vamos colecionar selos no passaporte, vamos colecionar memórias. O sabor de um vinho em Paris, o calor do sol no Uruguai, a energia de Nova York. Cada viagem será um capítulo novo na história que só nós sabemos escrever.</p>
+                    <div class="travel-carousel">
+                        <div class="carousel-track">
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/736x/b0/55/31/b05531bb11f250c8a1d7779d335b9522.jpg" alt="Paris, França"></div>
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/1200x/13/aa/45/13aa452019376148c96059e874f071d3.jpg" alt="Montevidéu, Uruguai"></div>
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/1200x/00/5f/ce/005fce4463e48419a6ee523d787bfb24.jpg" alt="Madri, Espanha"></div>
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/736x/de/b4/92/deb492470eb68e2ac1cbbee46093e050.jpg" alt="Lisboa, Portugal"></div>
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/736x/1b/b4/c4/1bb4c4013e0205d0d4887ad14d6d6a65.jpg" alt="Nova York, EUA"></div>
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/736x/8d/7e/8f/8d7e8f78b0a884c966241f914799c4fa.jpg" alt="Disney, Magic Kingdom"></div>
+                            <div class="carousel-slide"><img src="https://i.pinimg.com/736x/ef/d2/42/efd24242d96694f6fbe2cf7319268ca7.jpg" alt="Galway, Irlanda"></div>
+                        </div>
+                        <button class="carousel-button left">❮</button>
+                        <button class="carousel-button right">❯</button>
+                    </div>
+                </div>
+                <div class="next-step-button-wrapper">
+                    <button class="next-step-button">Nosso Para Sempre</button>
+                </div>
+            </section>
+            <!-- PASSO 5 -->
+            <section class="journey-step" id="step-5">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">5. Nosso Para Sempre</h2>
+                    <p class="step-subtitle">Este é o ponto de não retorno. O momento em que "para sempre" deixa de ser uma promessa e se torna a nossa realidade. O dia em que eu olharei para você no altar e terei a certeza de que todas as minhas preces foram atendidas em uma só pessoa: você.</p>
+                    <div class="image-grid">
+                        <img src="https://i.pinimg.com/1200x/58/0d/a7/580da7f76ad7f381f1aa86dd61d6ecf6.jpg" alt="Casamento 1">
+                        <img src="https://i.pinimg.com/1200x/6d/14/16/6d1416066728b75629060a6bb8635ffb.jpg" alt="Casamento 2">
+                    </div>
+                </div>
+                <div class="next-step-button-wrapper">
+                    <button class="next-step-button">Nossa Herança</button>
+                </div>
+            </section>
+            <!-- PASSO 6 -->
+             <section class="journey-step" id="step-6">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">6. Nossa Herança</h2>
+                    <p class="step-subtitle">A nossa maior obra de arte. Não serão cópias nossas, mas a prova viva de que o nosso amor é forte o suficiente para criar mais amor. Ensinaremos a eles sobre coragem, respeito e sobre a sorte imensa que é encontrar a sua pessoa no universo.</p>
+                    <div class="family-input-section">
+                        <div class="family-input-group">
+                             <input type="text" id="daughter-name-input" placeholder="O nome da nossa princesa...">
+                             <button id="show-daughter-button">Ver Ela</button>
+                        </div>
+                        <div class="family-input-group">
+                            <input type="text" id="son-name-input" placeholder="O nome do nosso campeão...">
+                            <button id="show-son-button">Ver Ele</button>
+                        </div>
+                    </div>
+                    <div id="family-reveal-container"></div>
+                </div>
+                <div class="next-step-button-wrapper">
+                    <button class="next-step-button">A Promessa Final</button>
+                </div>
+            </section>
+            <!-- PASSO 7 -->
+            <section class="journey-step" id="step-7">
+                <div class="step-content-wrapper">
+                    <h2 class="step-title">Isso não é um plano.</h2>
+                    <p class="step-subtitle">É uma promessa. E eu vou cumprir cada pedaço dela com você.</p>
+                </div>
+            </section>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- SELETORES DE ELEMENTOS ---
+        const startScreen = document.getElementById('start-screen');
+        const startButton = document.getElementById('start-button');
+        const fileInput = document.getElementById('final-file-input');
+        const mainContent = document.getElementById('main-content');
+        const lyricsContainer = document.getElementById('lyrics-container');
+        const audioPlayer = document.getElementById('audio-player');
+        
+        const lightScene = document.getElementById('light-scene');
+        const lightSwitch = document.getElementById('switch');
+        const journeyStartButton = document.getElementById('journey-start-button');
+        const journeyContainer = document.getElementById('journey-container');
+        
+        // --- LYRICS TIMELINE ---
+        const lyricsTimeline = [ { time: 0.40, text: "Pare tudo um segundo." }, { time: 1.81, text: "Respire." }, { time: 3.23, text: "Agora ouça..." }, { time: 4.87, text: "porque isso aqui não é só um texto," }, { time: 7.46, text: "é tudo que eu nunca consegui dizer" }, { time: 9.83, text: "do jeito que você merece." }, { time: 12.35, text: "É tudo que eu sinto," }, { time: 14.14, text: "e que só se expressa direito" }, { time: 15.96, text: "quando fecho os olhos e te imagino," }, { time: 18.84, text: "como se o mundo ficasse mais bonito" }, { time: 21.58, text: "só por lembrar do som da tua voz." }, { time: 24.07, text: "Yslana…", style: "intense" }, { time: 25.72, text: "Você virou a parte mais viva de mim." }, { time: 28.49, text: "O toque invisível que me acalma," }, { time: 30.61, text: "a risada que quebra qualquer dia ruim," }, { time: 33.46, text: "o olhar que eu não vejo," }, { time: 35.73, text: "mas que sinto quando fecho os olhos." }, { time: 38.76, text: "Tem algo em você" }, { time: 40.44, text: "que é diferente de tudo" }, { time: 41.93, text: "que já existiu em mim." }, { time: 43.03, text: "Você me dá paz…" }, { time: 44.44, text: "mas também me explode o coração." }, { time: 46.55, text: "Você é leve…" }, { time: 48.52, text: "mas pesa na alma de um jeito bom," }, { time: 51.08, text: "de quem chegou pra ficar." }, { time: 53.03, text: "Quando eu penso no futuro…" }, { time: 55.78, text: "eu não vejo um carro, uma casa ou um sonho." }, { time: 59.82, text: "Eu vejo você do lado." }, { time: 61.58, text: "Eu vejo sua mão na minha." }, { time: 63.44, text: "Eu vejo teu sorriso dizendo" }, { time: 65.47, text: '"a gente venceu".', style: "intense" }, { time: 67.30, text: "E se o mundo tentar te dizer" }, { time: 68.89, text: "que amor demais assusta…" }, { time: 70.26, text: "Foda-se o mundo.", style: "intense" }, { time: 72.37, text: "Eu quero te assustar de amor." }, { time: 74.15, text: "Te afogar de carinho." }, { time: 76.05, text: "Te mostrar que quando alguém escolhe" }, { time: 78.15, text: "alguém de verdade," }, { time: 79.06, text: "não tem dúvida, não tem metade." }, { time: 81.46, text: "Tem entrega. Tem intensidade. Tem verdade." }, { time: 86.35, text: "Eu sou isso." }, { time: 87.81, text: "Por você, eu sou tudo.", style: "intense" }, { time: 90.52, text: "Eu vou trabalhar, cair, levantar," }, { time: 94.46, text: "bater de frente com o mundo se for preciso," }, { time: 96.89, text: "só pra te ver bem, só pra te ver sorrir." }, { time: 99.35, text: "Porque seu sorriso me cura," }, { time: 102.38, text: "sua presença me eleva," }, { time: 104.17, text: "e seu nome…" }, { time: 105.25, text: "Ah, seu nome…" }, { time: 107.56, text: "É o som mais bonito" }, { time: 108.96, text: "que minha boca pode formar." }, { time: 110.34, text: "Eu não tô aqui pra te dar um “gostinho”." }, { time: 112.71, text: "Tô aqui pra te dar o pra sempre" }, { time: 114.92, text: "que ninguém conseguiu construir." }, { time: 116.88, text: "Você é meu plano A.", style: "intense" }, { time: 119.54, text: "E eu joguei fora o alfabeto todo," }, { time: 122.35, text: "porque não existe plano B" }, { time: 123.85, text: "quando se encontra a pessoa certa." }, { time: 126.11, text: "E se você duvidar, eu te provo." }, { time: 129.02, text: "Se você fugir, eu te acho." }, { time: 131.16, text: "Se você se perder, eu te encontro." }, { time: 134.02, text: "Porque não existe um mundo" }, { time: 135.10, text: "onde eu desisto de você." }, { time: 136.87, text: "Escuta isso com o coração:" }, { time: 139.95, text: "Eu vou casar com você.", style: "intense" }, { time: 141.95, text: "E você vai sorrir no altar," }, { time: 144.21, text: "olhar nos meus olhos e pensar:" }, { time: 146.52, text: '"Caralho. Ele falou… e ele fez."', style: "intense" }, { time: 151.00, text: "❤️", style: "intense" } ];
+        let lastTriggeredIndex = -1;
+        
+        startButton.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                audioPlayer.src = URL.createObjectURL(file);
+                startScreen.style.display = 'none';
+                mainContent.style.display = 'flex';
+                audioPlayer.play().catch(e => console.error("Erro ao tocar áudio:", e));
+            }
+        });
+
+        function runTimeline() {
+            const currentTime = audioPlayer.currentTime;
+            let newTriggeredIndex = -1;
+            lyricsTimeline.forEach((item, index) => { if (currentTime >= item.time) newTriggeredIndex = index; });
+            if (newTriggeredIndex !== lastTriggeredIndex) {
+                lastTriggeredIndex = newTriggeredIndex;
+                const currentItem = lyricsTimeline[newTriggeredIndex];
+                if (currentItem) {
+                    lyricsContainer.innerHTML = '';
+                    const p = document.createElement('p');
+                    p.className = 'line';
+                    p.textContent = currentItem.text;
+                    if (currentItem.style === 'intense') p.classList.add('intense-style');
+                    lyricsContainer.appendChild(p);
+                    setTimeout(() => p.classList.add('visible'), 50);
+                }
+            }
+        }
+        
+        function showLightScene() {
+            mainContent.style.opacity = '0';
+            setTimeout(() => { mainContent.style.display = 'none'; lightScene.classList.add('active'); }, 1000);
+        }
+
+        function toggleLights() { lightScene.classList.toggle('lights-on'); }
+
+        audioPlayer.addEventListener('timeupdate', runTimeline);
+        audioPlayer.addEventListener('ended', showLightScene);
+        lightSwitch.addEventListener('click', toggleLights);
+
+        journeyStartButton.addEventListener('click', () => {
+            lightScene.classList.add('journey-started');
+            journeyContainer.classList.add('visible');
+        });
+
+        // --- LÓGICA DE NAVEGAÇÃO DOS SLIDES ---
+        const nextStepButtons = document.querySelectorAll('.next-step-button');
+        const journeySteps = document.querySelectorAll('.journey-step');
+        const totalSteps = journeySteps.length;
+        let currentStep = 0;
+
+        if (journeySteps.length > 0) { journeySteps[0].classList.add('is-active'); }
+        nextStepButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                if (currentStep < totalSteps - 1) {
+                    journeySteps[currentStep].classList.remove('is-active');
+                    currentStep++;
+                    journeySteps[currentStep].classList.add('is-active');
+                }
+            });
+        });
+        
+        // --- LÓGICA DO PASSO 6 (NOSSA HERANÇA) ---
+        const daughterNameInput = document.getElementById('daughter-name-input');
+        const showDaughterButton = document.getElementById('show-daughter-button');
+        const sonNameInput = document.getElementById('son-name-input');
+        const showSonButton = document.getElementById('show-son-button');
+        const familyRevealContainer = document.getElementById('family-reveal-container');
+
+        function showFamilyMember(name, imageUrl) {
+            if (!name) return;
+            familyRevealContainer.innerHTML = `
+                <img src="${imageUrl}" alt="Imagem de ${name}" class="family-image">
+                <h3 class="family-caption">${name}</h3>
+            `;
+            familyRevealContainer.classList.add('visible');
+        }
+
+        showDaughterButton.addEventListener('click', () => {
+            const daughterName = daughterNameInput.value;
+            const daughterImageUrl = 'https://i.pinimg.com/736x/13/c7/12/13c71211bb98a025ac096c7fb30c9813.jpg';
+            showFamilyMember(daughterName, daughterImageUrl);
+        });
+
+        showSonButton.addEventListener('click', () => {
+            const sonName = sonNameInput.value;
+            const sonImageUrl = 'https://i.pinimg.com/1200x/19/15/53/191553b7e412696f7370f5f34e7f62c5.jpg';
+            showFamilyMember(sonName, sonImageUrl);
+        });
+
+        // --- LÓGICA DO CARROSSEL DE VIAGENS ---
+        const track = document.querySelector('.carousel-track');
+        const slides = Array.from(track.children);
+        const nextButton = document.querySelector('.carousel-button.right');
+        const prevButton = document.querySelector('.carousel-button.left');
+        let currentSlideIndex = 0;
+
+        const updateCarousel = () => { track.style.transform = 'translateX(-' + (currentSlideIndex * 100) + '%)'; }
+        prevButton.addEventListener('click', () => { currentSlideIndex = (currentSlideIndex > 0) ? currentSlideIndex - 1 : slides.length - 1; updateCarousel(); });
+        nextButton.addEventListener('click', () => { currentSlideIndex = (currentSlideIndex < slides.length - 1) ? currentSlideIndex + 1 : 0; updateCarousel(); });
+    });
+    </script>
+</body>
+</html>
